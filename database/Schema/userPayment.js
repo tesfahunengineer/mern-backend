@@ -1,12 +1,11 @@
-// models/Order.js
-
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
     requestedBy: {
       type: String,
-      required: true, // Ensures every order is linked to a user
+      required: true,
+      trim: true,
     },
     materialId: {
       type: String,
@@ -23,6 +22,7 @@ const orderSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       required: true,
+      min: 1,
     },
     unitOfMeasure: {
       type: String,
@@ -39,12 +39,18 @@ const orderSchema = new mongoose.Schema(
     paymentType: {
       type: String,
       required: true,
-      enum: ["Cash", "Bank Transfer", "Cheque"], // Allowed payment types
+      enum: ["Cash", "Bank Transfer", "Cheque"],
     },
     chequeNumber: {
       type: String,
-      required: function () {
-        return this.paymentType === "Cheque"; // Cheque number is required if payment type is 'Cheque'
+      validate: {
+        validator: function (v) {
+          if (this.paymentType === "Cheque") {
+            return typeof v === "string" && v.trim() !== "";
+          }
+          return true;
+        },
+        message: "Cheque number is required when payment type is Cheque",
       },
     },
     remainingBalance: {
@@ -68,16 +74,18 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "Approved", "cancelled"],
       default: "pending",
     },
-
     phoneNumber: {
       type: String,
       required: true,
-      match: [/^\d{10,15}$/, "Please enter a valid phone number"], // Ensures valid phone format
+      validate: {
+        validator: (v) => /^\d{10,15}$/.test(v),
+        message: "Phone number must be between 10 to 15 digits",
+      },
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 
-module.exports = mongoose.model("UserPayment", orderSchema);
+module.exports = mongoose.model("Order", orderSchema);
