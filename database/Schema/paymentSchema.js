@@ -4,34 +4,40 @@ const mongoose = require("mongoose");
 const paymentSchema = new mongoose.Schema({
   materialName: {
     type: String,
-    required: true,
+    required: [true, "Material name is required"],
+    trim: true,
   },
   quantity: {
-    type: Number, // Consider using Number if quantity should be numeric
-    required: true,
+    type: Number,
+    required: [true, "Quantity is required"],
+    min: [0, "Quantity must be a positive number"],
   },
   measurement: {
-    // Corrected the typo here
     type: String,
-    required: true,
+    required: [true, "Measurement unit is required"],
+    trim: true,
   },
   paidAmount: {
-    // New field
     type: Number,
-    required: true,
+    required: [true, "Paid amount is required"],
+    min: [0, "Paid amount must be a positive number"],
   },
   paymentType: {
     type: String,
-    enum: ["Cash", "Transfer", "Check"],
-    required: true,
+    enum: {
+      values: ["Cash", "Transfer", "Check"],
+      message: "Payment type must be either Cash, Transfer, or Check",
+    },
+    required: [true, "Payment type is required"],
   },
   paymentDate: {
     type: Date,
-    required: true,
+    required: [true, "Payment date is required"],
   },
   paymentReason: {
     type: String,
-    required: true,
+    required: [true, "Payment reason is required"],
+    trim: true,
   },
   createdAt: {
     type: Date,
@@ -39,7 +45,7 @@ const paymentSchema = new mongoose.Schema({
   },
 });
 
-// Create a Payment model
+// Create the model
 const Payment = mongoose.model("Payment", paymentSchema);
 
 module.exports = Payment;
